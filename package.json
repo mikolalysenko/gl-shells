@@ -1,0 +1,29 @@
+{
+  "name": "gl-shells",
+  "version": "0.0.0",
+  "description": "Simple ready-to-go viewers for static models in WebGL",
+  "main": "src/index.js",
+  "directories": {
+    "example": "example"
+  },
+  "dependencies": {
+    "jquery-browserify": "~1.8.1",
+    "trimesh": "~0.0.8",
+    "arcball": "~0.0.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mikolalysenko/gl-shells.git"
+  },
+  "keywords": [
+    "webgl",
+    "viewer",
+    "static",
+    "mesh"
+  ],
+  "author": "Mikola Lysenko",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "gitHead": "38ce8fbc63a7f56bd31e26e289c57e6a4b31ebe0"
+}
