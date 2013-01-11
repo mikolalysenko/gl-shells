@@ -6,6 +6,9 @@ var $             = require('jquery-browserify')
 
 exports.makeViewer = function(params) {
 
+  if(!params) {
+    params = {};
+  }
   var shell = require('./shell.js').makeShell(params);
 
   var shaderInfo = {
