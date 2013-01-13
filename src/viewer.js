@@ -10,6 +10,10 @@ exports.makeViewer = function(params) {
     params = {};
   }
   var shell = require('./shell.js').makeShell(params);
+  
+  if(!params.lightPosition) {
+    params.lightPosition = [100,100,100];
+  }
 
   var shaderInfo = {
     vertexShader: [
@@ -66,7 +70,7 @@ exports.makeViewer = function(params) {
       position:         new Float32Array([0,0,0,1,0,0,0,1,0]),
       color:            new Float32Array([0,0,1,1,0,0,0,1,0]),
       normal:           new Float32Array([0,0,1,0,0,1,0,0,1]),
-      lightPosition:    new GLOW.Vector3(100, 100, 100)
+      lightPosition:    new GLOW.Vector3(params.lightPosition[0], params.lightPosition[1], params.lightPosition[2])
     },
     interleave: {
       position: false,
