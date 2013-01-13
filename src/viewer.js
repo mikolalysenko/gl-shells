@@ -21,12 +21,15 @@ exports.makeViewer = function(params) {
       "attribute  vec3      color;",
       "attribute  vec3      normal;",
       
+      "varying    vec3      eyeDir;",
       "varying    vec3      f_color;",
       "varying    vec3      f_normal;",
       "varying    vec3      f_position;",
       
       "void main(void) {",
-        "gl_Position = cameraProjection * cameraInverse * transform * vec4( position, 1.0 );",
+        "vec4 t_position = transform * vec4( position, 1.0 );",
+        "gl_Position = cameraProjection * cameraInverse * t_position;",
+        "eyeDir = normalize(t_position.xyz);",
         "f_color = color;",
         "f_normal = normal;",
         "f_position = position;",
@@ -38,21 +41,20 @@ exports.makeViewer = function(params) {
       "#endif",
       
       "uniform    vec3  lightPosition;",
-      "uniform    mat4  transform;",
       
+      "varying    vec3      eyeDir;",
       "varying    vec3      f_color;",
       "varying    vec3      f_normal;",
       "varying    vec3      f_position;",
       
       "void main() {",
       
-        "vec3 eyeDir   = normalize(transform[2].xyz);",
         "vec3 lightDir = normalize(lightPosition - f_position);",
 
         "float diffuse = clamp(dot(lightDir, f_normal), 0.0, 1.0);",
-        "float specular = clamp(-dot(f_normal, normalize(lightDir + eyeDir)), 0.0, 1.0);",
-        "specular = specular*specular*specular*specular;",
-        "float intensity = 0.5 + diffuse + 0.5 * specular * specular * specular;",
+        "float specular = clamp(dot(f_normal, normalize(lightDir + eyeDir)), 0.0, 1.0);",
+        "specular = pow(specular, 32.0);",
+        "float intensity = 0.4 + 0.6 * diffuse + 0.5 * specular;",
         
         "gl_FragColor = vec4(intensity * f_color, 1.0);",
       "}"
@@ -64,7 +66,7 @@ exports.makeViewer = function(params) {
       position:         new Float32Array([0,0,0,1,0,0,0,1,0]),
       color:            new Float32Array([0,0,1,1,0,0,0,1,0]),
       normal:           new Float32Array([0,0,1,0,0,1,0,0,1]),
-      lightPosition:    new GLOW.Vector3([100, 100, 100])
+      lightPosition:    new GLOW.Vector3(100, 100, 100)
     },
     interleave: {
       position: false,
