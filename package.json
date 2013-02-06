@@ -1,6 +1,6 @@
 {
   "name": "gl-shells",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Simple ready-to-go viewers for static models in WebGL",
   "main": "src/index.js",
   "directories": {
