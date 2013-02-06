@@ -81,7 +81,7 @@ exports.makeShell = function(params) {
   function render() {
     shell.context.cache.clear();
     shell.context.enableDepthTest(true);
-    shell.context.enableCulling(true);
+    shell.context.enableCulling(true, {frontFace: GL.CW, cullFace: GL.BACK});
     shell.context.clear();
   
     shell.events.emit("render");
