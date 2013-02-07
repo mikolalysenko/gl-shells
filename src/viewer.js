@@ -77,7 +77,6 @@ exports.makeViewer = function(params) {
       normal:   false,
       color:    false
     },
-    indices: new Uint16Array([0,1,2]),
     primitives: params.wireframe ? GL.LINES : GL.TRIANGLES,
     usage:     GL.DYNAMIC_DRAW
   };
@@ -87,31 +86,36 @@ exports.makeViewer = function(params) {
   //Update mesh
   shell.updateMesh = function(params) {
   
+    /*
     //Update elements
     var faces = params.faces;
     var elements = shell.shader.elements;
     elements.length = faces.length*3;
     GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, elements.elements);
     GL.bufferData(GL.ELEMENT_ARRAY_BUFFER, new Uint16Array(utils.flatten(faces)), GL.DYNAMIC_DRAW);
-
+    */
+    
+    
     //Update normals
     var normals = trimesh.vertex_normals(params);
-    shell.shader.normal.bufferData(new Float32Array(utils.flatten(normals)));
+    shell.shader.normal.bufferData(new Float32Array(utils.flattenFaces(params.faces, normals)));
     
     //Update colors
     if(params.colors) {
-      shell.shader.color.bufferData(new Float32Array(utils.flatten(params.colors)));
+      shell.shader.color.bufferData(new Float32Array(utils.flattenFaces(params.faces, params.colors)));
     } else {
       for(var i=0; i<normals.length; ++i) {
         for(var j=0; j<3; ++j) {
           normals[i][j] = 0.5 * normals[i][j] + 0.5;
         }
       }
-      shell.shader.color.bufferData(new Float32Array(utils.flatten(normals)));
+      shell.shader.color.bufferData(new Float32Array(utils.flattenFaces(params.faces, normals)));
     }
     
     //Update buffer data
-    shell.shader.position.bufferData(new Float32Array(utils.flatten(params.positions)), GL.DYNAMIC_DRAW);
+    shell.shader.position.bufferData(new Float32Array(utils.flattenFaces(params.faces, params.positions)), GL.DYNAMIC_DRAW);
+    
+    shell.shader.elements.length = 3*params.faces.length;
   }
 
   //Draw mesh

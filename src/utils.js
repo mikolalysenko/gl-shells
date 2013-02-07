@@ -9,6 +9,20 @@ exports.flatten = function(arr) {
   return result;
 }
 
+exports.flattenFaces = function(faces, arr) {
+  var result = [];
+  for(var i=0; i<faces.length; ++i) {
+    var f = faces[i];
+    for(var j=0; j<f.length; ++j) {
+      var p = arr[f[j]];
+      for(var k=0; k<3; ++k) {
+        result.push(p[k]);
+      }
+    }
+  }
+  return result;
+}
+
 var nextFrame = (function(){
     return  window.requestAnimationFrame       ||
             window.webkitRequestAnimationFrame || 
