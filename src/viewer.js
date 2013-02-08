@@ -117,7 +117,7 @@ exports.makeViewer = function(params) {
     //Update buffer data
     shell.shader.position.bufferData(new Float32Array(utils.flattenFaces(params.faces, params.positions)), GL.DYNAMIC_DRAW);
     
-    shell.shader.elements.length = 3*params.faces.length;
+    shell.shader.elements.length = 3*utils.elementLen(params.faces);
   }
 
   //Draw mesh

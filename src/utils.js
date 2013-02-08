@@ -15,6 +15,14 @@ function pushVert(result, p) {
   }
 }
 
+exports.elementLen = function(faces) {
+  var count = 0;
+  for(var i=0; i<faces.length; ++i) {
+    count += faces[i].length - 2;
+  }
+  return count;
+}
+
 exports.flattenFaces = function(faces, arr) {
   var result = [];
   for(var i=0; i<faces.length; ++i) {
