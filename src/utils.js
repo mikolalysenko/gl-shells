@@ -31,6 +31,7 @@ exports.flattenFaces = function(faces, arr) {
 exports.flattenPerFace = function(faces, arr) {
   var result = [];
   for(var i=0; i<faces.length; ++i) {
+    var f = faces[i];
     for(var j=2; j<f.length; ++j) {
       pushVert(result, arr[i]);
       pushVert(result, arr[i]);
