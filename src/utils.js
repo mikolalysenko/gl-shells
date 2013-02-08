@@ -9,15 +9,33 @@ exports.flatten = function(arr) {
   return result;
 }
 
+
+function push_v(r, p) {
+  r.push(p[0]);
+  r.push(p[1]);
+  r.push(p[2]);
+}
+
 exports.flattenFaces = function(faces, arr) {
   var result = [];
   for(var i=0; i<faces.length; ++i) {
     var f = faces[i];
-    for(var j=0; j<f.length; ++j) {
-      var p = arr[f[j]];
-      for(var k=0; k<3; ++k) {
-        result.push(p[k]);
-      }
+    for(var j=2; j<f.length; ++j) {
+      push_v(result, arr[f[0]]);
+      push_v(result, arr[f[j-1]]);
+      push_v(result, arr[f[j-2]]);
+    }
+  }
+  return result;
+}
+
+exports.flattenPerFace = function(faces, arr) {
+  var result = [];
+  for(var i=0; i<faces.length; ++i) {
+    for(var j=2; j<f.length; ++j) {
+      push_v(result, arr[i]);
+      push_v(result, arr[i]);
+      push_v(result, arr[i]);
     }
   }
   return result;
