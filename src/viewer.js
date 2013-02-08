@@ -103,6 +103,8 @@ exports.makeViewer = function(params) {
     //Update colors
     if(params.colors) {
       shell.shader.color.bufferData(new Float32Array(utils.flattenFaces(params.faces, params.colors)));
+    } else if(params.face_colors) {
+      shell.shader.color.bufferData(new Float32Array(utils.flattenPerFace(params.faces, params.face_colors)));
     } else {
       for(var i=0; i<normals.length; ++i) {
         for(var j=0; j<3; ++j) {
