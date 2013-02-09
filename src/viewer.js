@@ -11,6 +11,8 @@ exports.makeViewer = function(params) {
   }
   var shell = require('./shell.js').makeShell(params);
   
+  shell.params = params;
+  
   if(!params.lightPosition) {
     params.lightPosition = [100,100,100];
   }
@@ -77,28 +79,60 @@ exports.makeViewer = function(params) {
       normal:   false,
       color:    false
     },
-    primitives: params.wireframe ? GL.LINES : GL.TRIANGLES,
+    primitives: GL.TRIANGLES,
+    usage:     GL.DYNAMIC_DRAW
+  };
+  
+  
+  var wireInfo = {
+    vertexShader: [
+      "uniform     mat4     transform;",
+      "uniform     mat4     cameraInverse;",
+      "uniform     mat4     cameraProjection;",
+      
+      "attribute  vec3      position;",
+      
+      "void main(void) {",
+        "vec4 t_position = transform * vec4( position, 1.0 );",
+        "gl_Position = cameraProjection * cameraInverse * t_position;",
+      "}"
+    ].join("\n"),
+    fragmentShader: [
+      "#ifdef GL_ES",
+        "precision highp float;",
+      "#endif",
+      
+      "void main() {",
+        "gl_FragColor = vec4(0, 0, 0, 1);",
+      "}"
+    ].join("\n"),
+    data: {
+      transform:        new GLOW.Matrix4(),
+      cameraInverse:    GLOW.defaultCamera.inverse,
+      cameraProjection: GLOW.defaultCamera.projection,
+      position:         new Float32Array([0,0,0,1,0,0]),
+    },
+    interleave: {
+      position: false,
+    },
+    primitives: GL.LINES,
     usage:     GL.DYNAMIC_DRAW
   };
   
   shell.shader = new GLOW.Shader(shaderInfo);
+  shell.wireShader = new GLOW.Shader(wireInfo);
   
   //Update mesh
   shell.updateMesh = function(params) {
   
-    /*
-    //Update elements
-    var faces = params.faces;
-    var elements = shell.shader.elements;
-    elements.length = faces.length*3;
-    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, elements.elements);
-    GL.bufferData(GL.ELEMENT_ARRAY_BUFFER, new Uint16Array(utils.flatten(faces)), GL.DYNAMIC_DRAW);
-    */
-    
-    
     //Update normals
-    var normals = trimesh.vertex_normals(params);
-    shell.shader.normal.bufferData(new Float32Array(utils.flattenFaces(params.faces, normals)));
+    if(shell.params.flatShaded) {
+      var normals = trimesh.face_normals(params);
+      shell.shader.normal.bufferData(new Float32Array(utils.flattenPerFace(params.faces, normals)));
+    } else {
+      var normals = trimesh.vertex_normals(params);
+      shell.shader.normal.bufferData(new Float32Array(utils.flattenFaces(params.faces, normals)));
+    }
     
     //Update colors
     if(params.colors) {
@@ -111,25 +145,48 @@ exports.makeViewer = function(params) {
           normals[i][j] = 0.5 * normals[i][j] + 0.5;
         }
       }
-      shell.shader.color.bufferData(new Float32Array(utils.flattenFaces(params.faces, normals)));
+      if(shell.params.flatShaded) {
+        shell.shader.color.bufferData(new Float32Array(utils.flattenPerFace(params.faces, normals)));
+      } else {
+        shell.shader.color.bufferData(new Float32Array(utils.flattenFaces(params.faces, normals)));
+      }
     }
     
     //Update buffer data
     shell.shader.position.bufferData(new Float32Array(utils.flattenFaces(params.faces, params.positions)), GL.DYNAMIC_DRAW);
     
     shell.shader.elements.length = 3*utils.elementLen(params.faces);
+    
+    if(shell.params.wireframe) {
+      var wire_pos = [];
+      for(var i=0; i<params.faces.length; ++i) {
+        var f = params.faces[i];
+        for(var j=0; j<f.length; ++j) {
+          wire_pos.push(params.positions[f[j]]);
+          wire_pos.push(params.positions[f[(j+1)%f.length]]);
+        }
+      }
+      shell.wireShader.position.bufferData(new Float32Array(utils.flatten(wire_pos)));
+      shell.wireShader.elements.length = wire_pos.length;
+    }
   }
 
   //Draw mesh
   shell.events.on('render', function() {
     var matrix = shell.camera.matrix()
-      , xform  = shell.shader.transform;
+      , xform0  = shell.shader.transform
+      , xform1  = shell.wireShader.transform;
     for(var i=0; i<4; ++i) {
       for(var j=0; j<4; ++j) {
-        xform.value[i+4*j] = matrix[i][j];
+        var ptr = i+4*j;
+        xform0.value[ptr] = xform1.value[ptr] = matrix[i][j];
       }
     }
     shell.shader.draw();
+    if(shell.params.wireframe) {
+      GL.lineWidth(2.0);
+      shell.wireShader.draw();
+    }
   });
 
   return shell;
