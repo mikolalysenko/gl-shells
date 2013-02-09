@@ -47,6 +47,9 @@ exports.makeViewer = function(params) {
       "#endif",
       
       "uniform    vec3  lightPosition;",
+      "uniform    float     ambientPower;",
+      "uniform    float     diffusePower;",
+      "uniform    float     specularPower;",
       
       "varying    vec3      eyeDir;",
       "varying    vec3      f_color;",
@@ -72,7 +75,10 @@ exports.makeViewer = function(params) {
       position:         new Float32Array([0,0,0,1,0,0,0,1,0]),
       color:            new Float32Array([0,0,1,1,0,0,0,1,0]),
       normal:           new Float32Array([0,0,1,0,0,1,0,0,1]),
-      lightPosition:    new GLOW.Vector3(params.lightPosition[0], params.lightPosition[1], params.lightPosition[2])
+      lightPosition:    new GLOW.Vector3(params.lightPosition[0], params.lightPosition[1], params.lightPosition[2]),
+      ambientPower:     0.4,
+      diffusePower:     0.6,
+      specularPower:    0.5
     },
     interleave: {
       position: false,
