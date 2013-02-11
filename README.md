@@ -1,19 +1,45 @@
 gl-shells
 =========
+Simple ready-to-go WebGL shell for viewing meshes in your browser.
 
-Simple ready-to-go WebGL shells for making spinning models
+Installation/Example
+====================
+First install the package using npm:
 
-Usage
-=====
-
-Here is an example using jquery and some data from meshdata showing how to draw a bunny:
+    npm install gl-shells
+    
+Then you can draw a mesh in your browser directly.  Here is an example showing how to draw a bunny.  It also uses jquery and the Stanford bunny:
 
     var $ = require("jquery-browserify");
     $(document).ready(function() {
       var viewer = require("gl-shells").makeViewer();
-      viewer.updateMesh(require("meshdata").bunny);
+      viewer.updateMesh(require("bunny"));
     });
 
+And here is the accompanying HTML:
+
+    <html><!DOCTYPE html>
+    <html>
+    <head>
+      <title> Quasicrystal </title>
+      <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+      <script src="bundle.js"></script>
+    </head>
+    <body>
+      <div id="container"></div>
+    </body>
+    </html>
+
+You can then compile this code using browserify to view it within your browser.  Or if you are feeling lazy, you can spin up a server directly using serverify.  To do that, you first need to install it:
+
+    sudo npm install -g serverify
+    
+And then go into the example directory and run it:
+
+    cd example/
+    serverify
+
+Or you can try it out [in your browser right now on gh-pages](http://mikolalysenko.github.com/gl-shells/example/www/index.html).
 
 Methods
 =======
@@ -55,7 +81,6 @@ A WebGL GLOW object.
 Added to window.GL (unfortunately), the current active GL context.
 
 
-Installation
-============
-
-    npm install gl-shells
+Credits
+=======
+(c) 2013 Mikola Lysenko. BSD License
