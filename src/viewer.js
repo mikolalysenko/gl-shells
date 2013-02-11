@@ -2,7 +2,10 @@
 var $             = require('jquery-browserify')
   , GLOW          = require('./GLOW.js').GLOW
   , utils         = require('./utils.js')
-  , trimesh       = require('trimesh');
+  , normals       = require("normals");
+
+var vertexNormals = normals.vertexNormals;
+var faceNormals = normals.faceNormals;
 
 exports.makeViewer = function(params) {
 
@@ -63,7 +66,7 @@ exports.makeViewer = function(params) {
         "float diffuse = clamp(dot(lightDir, f_normal), 0.0, 1.0);",
         "float specular = clamp(dot(f_normal, normalize(lightDir + eyeDir)), 0.0, 1.0);",
         "specular = pow(specular, 32.0);",
-        "float intensity = 0.4 + 0.6 * diffuse + 0.5 * specular;",
+        "float intensity = ambientPower + diffusePower * diffuse + specularPower * specular;",
         
         "gl_FragColor = vec4(intensity * f_color, 1.0);",
       "}"
@@ -76,9 +79,9 @@ exports.makeViewer = function(params) {
       color:            new Float32Array([0,0,1,1,0,0,0,1,0]),
       normal:           new Float32Array([0,0,1,0,0,1,0,0,1]),
       lightPosition:    new GLOW.Vector3(params.lightPosition[0], params.lightPosition[1], params.lightPosition[2]),
-      ambientPower:     0.4,
-      diffusePower:     0.6,
-      specularPower:    0.5
+      ambientPower:     new GLOW.Float(0.4),
+      diffusePower:     new GLOW.Float(0.6),
+      specularPower:    new GLOW.Float(0.5)
     },
     interleave: {
       position: false,
@@ -130,21 +133,23 @@ exports.makeViewer = function(params) {
   
   //Update mesh
   shell.updateMesh = function(params) {
-  
+    
+    var faces = params.faces || params.cells;
+
     //Update normals
     if(shell.params.flatShaded) {
-      var normals = trimesh.face_normals(params);
-      shell.shader.normal.bufferData(new Float32Array(utils.flattenPerFace(params.faces, normals)));
+      var normals = params.faceNormals || faceNormals(faces, params.positions);
+      shell.shader.normal.bufferData(new Float32Array(utils.flattenPerFace(faces, normals)));
     } else {
-      var normals = trimesh.vertex_normals(params);
-      shell.shader.normal.bufferData(new Float32Array(utils.flattenFaces(params.faces, normals)));
+      var normals = params.vertexNormals || vertexNormals(faces, params.positions);
+      shell.shader.normal.bufferData(new Float32Array(utils.flattenFaces(faces, normals)));
     }
     
     //Update colors
     if(params.colors) {
-      shell.shader.color.bufferData(new Float32Array(utils.flattenFaces(params.faces, params.colors)));
-    } else if(params.face_colors) {
-      shell.shader.color.bufferData(new Float32Array(utils.flattenPerFace(params.faces, params.face_colors)));
+      shell.shader.color.bufferData(new Float32Array(utils.flattenFaces(faces, params.colors)));
+    } else if(params.faceColors) {
+      shell.shader.color.bufferData(new Float32Array(utils.flattenPerFace(faces, params.faceColors)));
     } else {
       for(var i=0; i<normals.length; ++i) {
         for(var j=0; j<3; ++j) {
@@ -152,21 +157,21 @@ exports.makeViewer = function(params) {
         }
       }
       if(shell.params.flatShaded) {
-        shell.shader.color.bufferData(new Float32Array(utils.flattenPerFace(params.faces, normals)));
+        shell.shader.color.bufferData(new Float32Array(utils.flattenPerFace(faces, normals)));
       } else {
-        shell.shader.color.bufferData(new Float32Array(utils.flattenFaces(params.faces, normals)));
+        shell.shader.color.bufferData(new Float32Array(utils.flattenFaces(faces, normals)));
       }
     }
     
     //Update buffer data
-    shell.shader.position.bufferData(new Float32Array(utils.flattenFaces(params.faces, params.positions)), GL.DYNAMIC_DRAW);
+    shell.shader.position.bufferData(new Float32Array(utils.flattenFaces(faces, params.positions)), GL.DYNAMIC_DRAW);
     
-    shell.shader.elements.length = 3*utils.elementLen(params.faces);
+    shell.shader.elements.length = 3*utils.elementLen(faces);
     
     if(shell.params.wireframe) {
       var wire_pos = [];
-      for(var i=0; i<params.faces.length; ++i) {
-        var f = params.faces[i];
+      for(var i=0; i<faces.length; ++i) {
+        var f = faces[i];
         for(var j=0; j<f.length; ++j) {
           wire_pos.push(params.positions[f[j]]);
           wire_pos.push(params.positions[f[(j+1)%f.length]]);
