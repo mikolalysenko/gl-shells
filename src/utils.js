@@ -9,11 +9,18 @@ exports.flatten = function(arr) {
   return result;
 }
 
+function pushVert(result, p) {
+  for(var k=0; k<3; ++k) {
+    result.push(p[k]);
+  }
+}
 
-function push_v(r, p) {
-  r.push(p[0]);
-  r.push(p[1]);
-  r.push(p[2]);
+exports.elementLen = function(faces) {
+  var count = 0;
+  for(var i=0; i<faces.length; ++i) {
+    count += faces[i].length - 2;
+  }
+  return count;
 }
 
 exports.flattenFaces = function(faces, arr) {
@@ -21,9 +28,9 @@ exports.flattenFaces = function(faces, arr) {
   for(var i=0; i<faces.length; ++i) {
     var f = faces[i];
     for(var j=2; j<f.length; ++j) {
-      push_v(result, arr[f[0]]);
-      push_v(result, arr[f[j-1]]);
-      push_v(result, arr[f[j-2]]);
+      pushVert(result, arr[f[0]]);
+      pushVert(result, arr[f[j-1]]);
+      pushVert(result, arr[f[j]]);
     }
   }
   return result;
@@ -32,10 +39,11 @@ exports.flattenFaces = function(faces, arr) {
 exports.flattenPerFace = function(faces, arr) {
   var result = [];
   for(var i=0; i<faces.length; ++i) {
+    var f = faces[i];
     for(var j=2; j<f.length; ++j) {
-      push_v(result, arr[i]);
-      push_v(result, arr[i]);
-      push_v(result, arr[i]);
+      pushVert(result, arr[i]);
+      pushVert(result, arr[i]);
+      pushVert(result, arr[i]);
     }
   }
   return result;
