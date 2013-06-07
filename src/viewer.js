@@ -133,9 +133,17 @@ exports.makeViewer = function(params) {
   
   //Update mesh
   shell.updateMesh = function(params) {
-    
-    var faces = params.faces || params.cells;
 
+    if(params.packed) {
+      shell.shader.normal.bufferData(params.normals)
+      shell.shader.color.bufferData(params.colors)
+      shell.shader.position.bufferData(params.positions)
+      shell.shader.elements.length = (params.positions.length / 3)|0
+      return
+    }
+    
+    var faces = params.faces || params.cells
+    
     //Update normals
     if(shell.params.flatShaded) {
       var normals = params.faceNormals || faceNormals(faces, params.positions);
