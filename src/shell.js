@@ -14,14 +14,13 @@ exports.makeShell = function(params) {
     , camera_pos  = params.camera_pos || [ 0, 0, 50 ]
     , container   = params.container  || "#container";
 
+  var citem = $(container)[0]
+
   //Create event emitter
-  shell.events = new EventEmitter();
+  shell.events = new EventEmitter({ width:citem.clientWidth, height:citem.clientHeight });
 
   //Initialize GLOW
   shell.context = new GLOW.Context();
-  if(!shell.context.enableExtension("OES_texture_float")) {
-    throw new Exception("No support for float textures");
-  }
   shell.context.setupClear({
       red:    bg_color[0]
     , green:  bg_color[1]
@@ -76,10 +75,41 @@ exports.makeShell = function(params) {
       buttons.zoom = false;
     }
   });
+  $(container).blur(function(e) {
+    buttons.rotate = buttons.pan = buttons.zoom = false;
+  })
+  
+  function updateShape() {
+    var w = citem.clientWidth|0
+    var h = citem.clientHeight|0
+    if(w !== shell.context.domElement.width ||
+       h !== shell.context.domElement.height ) {
+      shell.context.width = w;
+      shell.context.height = h;
+      shell.context.viewport.width = w;
+      shell.context.viewport.height = h;
+      shell.context.domElement.width = w;
+      shell.context.domElement.height = h;
+      GLOW.defaultCamera.aspect = w / h;
+      GLOW.Matrix4.makeProjection(
+        GLOW.defaultCamera.fov,
+        GLOW.defaultCamera.aspect,
+        GLOW.defaultCamera.near,
+        GLOW.defaultCamera.far,
+        GLOW.defaultCamera.projection
+      );
+    }
+    
+  }
+  $(container).bind("DOMSubtreeModified", updateShape)
+  $(window).resize(updateShape)
+  shell.updateShape = updateShape
   
   //Render loop
   function render() {
     shell.context.cache.clear();
+    shell.context.setViewport();
+    GLOW.defaultCamera.update()
     shell.context.enableDepthTest(true);
     if(params.cullCW) {
       shell.context.enableCulling(true, {frontFace: GL.CW, cullFace: GL.BACK});
