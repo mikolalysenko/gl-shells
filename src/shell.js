@@ -17,10 +17,10 @@ exports.makeShell = function(params) {
   var citem = $(container)[0]
 
   //Create event emitter
-  shell.events = new EventEmitter({ width:citem.clientWidth, height:citem.clientHeight });
+  shell.events = new EventEmitter();
 
   //Initialize GLOW
-  shell.context = new GLOW.Context();
+  shell.context = new GLOW.Context({ width:citem.clientWidth, height:citem.clientHeight });
   shell.context.setupClear({
       red:    bg_color[0]
     , green:  bg_color[1]
@@ -79,10 +79,13 @@ exports.makeShell = function(params) {
     buttons.rotate = buttons.pan = buttons.zoom = false;
   })
   
+  var forceUpdate = false
+  
   function updateShape() {
     var w = citem.clientWidth|0
     var h = citem.clientHeight|0
-    if(w !== shell.context.domElement.width ||
+    if(forceUpdate ||
+       w !== shell.context.domElement.width ||
        h !== shell.context.domElement.height ) {
       shell.context.width = w;
       shell.context.height = h;
@@ -98,12 +101,15 @@ exports.makeShell = function(params) {
         GLOW.defaultCamera.far,
         GLOW.defaultCamera.projection
       );
+      forceUpdate = false
     }
-    
   }
   $(container).bind("DOMSubtreeModified", updateShape)
   $(window).resize(updateShape)
-  shell.updateShape = updateShape
+  shell.updateShape = function() {
+    forceUpdate = true
+    updateShape()
+  }
   
   //Render loop
   function render() {
@@ -124,7 +130,7 @@ exports.makeShell = function(params) {
     
     utils.nextFrame(render);
   }
-  
+  shell.updateShape();
   render();
   
   return shell;
